@@ -45,7 +45,7 @@ class TestAutomlCore(unittest.TestCase):
                   'learning_rate': 0.3, 'num_round': 100, \
                   'eval_metric': 'ndcg@ab'}
         with self.assertRaises(automl_core.ParamError):
-            params = automl_core.xgb_parameter_checker(params, 100, 2)
+            automl_core.xgb_parameter_checker(params, 100, 2)
 
     def test_metric_optimization_direction(self):
         """
