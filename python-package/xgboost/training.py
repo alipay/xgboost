@@ -12,6 +12,159 @@ from .automl_core import ConvergenceTester, xgb_parameter_checker, get_optimizat
 from . import rabit
 from . import callback
 
+def _param_rewrite(params, n, p):
+    """Internal function to rewrite some parameters"""
+    col_sample_bytree = params.get('colsample_bytree', 1)
+    # When feature dimension is too large, building trees will become
+    # super expensive, limiting feature input will add randomness
+    # (and therefore diversity) and improve overall training efficiency.
+    if p * col_sample_bytree > 2000:
+        params['colsample_bytree'] = 2000.0 / p
+        rabit.tracker_print("[ParamRewrite] colsample_bytree = {}\n".format(params['colsample_bytree']))
+
+    # When # of points are too large, automatically switch to stochastic
+    # gradient boosting.
+    subsample = params.get('subsample', 1)
+    if n * subsample > 1e8:
+        params['subsample'] = 1e6 * 1.0 / n
+        rabit.tracker_print("[ParamRewrite] subsample = {}\n".format(params['subsample']))
+
+    if 'convergence_criteria' not in params:
+        params['convergence_criteria'] = '10:0:0.8'
+        rabit.tracker_print("[ParamRewrite] convergence_criteria = {}\n".format(params['convergence_criteria']))
+
+def _auto_train_internal(params, dtrain,
+                         num_boost_round=1000, evals=(),
+                         obj=None, feval=None,
+                         xgb_model=None, callbacks=None):
+    """Internal function to automatically train xgboost"""
+    maximize = params['maximize_eval_metric'].lower() == 'true'
+    _param_rewrite(params, dtrain.num_row(), dtrain.num_col())
+    depths = range(2, 11)
+    learning_rates = [0.5, 0.2, 0.1, 0.05, 0.02, 0.01]
+    if 'eta' in params:
+        # If learning rate is specified, skip tuning.
+        learning_rates = [float(params['eta'])]
+    ct_d = ConvergenceTester(1, 2, 1.0)
+    ct_d.reset(maximize)
+    ct_l = ConvergenceTester(1, 2, 1.0)
+    if maximize:
+        best_so_far = float('-inf')
+    else:
+        best_so_far = float('inf')
+    for d in depths:
+        ct_l.reset(maximize)
+        params['max_depth'] = str(d)
+        for l in learning_rates:
+            params['eta'] = str(l)
+            model = train(params, dtrain,
+                          num_boost_round=num_boost_round,
+                          evals=evals,
+                          check_params=False)
+            best_score = float(model.attr('best_score'))
+            ct_l.add(best_score)
+            rabit.tracker_print("depth = {}, learning rate = {}, best_score = {}\n\n".format(d, l, best_score))
+            if (maximize and best_score > best_so_far) or \
+                ((not maximize) and best_score < best_so_far):
+                best_so_far = best_score
+                best_model = model
+                best_depth = d
+                best_learning_rate = l
+
+            if ct_l.is_converged():
+                break
+        ct_d.add(ct_l.get_best_so_far())
+        if ct_d.is_converged():
+            break
+    best_model.set_attr(best_depth=str(best_depth),
+                        best_learning_rate=str(best_learning_rate))
+    return best_model
+
+def auto_train(params, dtrain, num_boost_round=1000, evals=(), obj=None, feval=None,
+               maximize=False, early_stopping_rounds=None, evals_result=None,
+               verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None):
+    # pylint: disable=too-many-statements,too-many-branches, attribute-defined-outside-init
+    """Automatically train a booster.
+
+    Parameters
+    ----------
+    params : dict
+        Booster params.
+    dtrain : DMatrix
+        Data to be trained.
+    num_boost_round: int
+        Number of boosting iterations.
+    evals: list of pairs (DMatrix, string)
+        List of items to be evaluated during training, this allows user to watch
+        performance on the validation set.
+    obj : function
+        Customized objective function.
+    feval : function
+        Customized evaluation function.
+    maximize : bool
+        Whether to maximize feval.
+    early_stopping_rounds: int
+        Activates early stopping. Validation error needs to decrease at least
+        every **early_stopping_rounds** round(s) to continue training.
+        Requires at least one item in **evals**.
+        If there's more than one, will use the last.
+        Returns the model from the last iteration (not the best one).
+        If early stopping occurs, the model will have three additional fields:
+        ``bst.best_score``, ``bst.best_iteration`` and ``bst.best_ntree_limit``.
+        (Use ``bst.best_ntree_limit`` to get the correct value if
+        ``num_parallel_tree`` and/or ``num_class`` appears in the parameters)
+    evals_result: dict
+        This dictionary stores the evaluation results of all the items in watchlist.
+
+        Example: with a watchlist containing
+        ``[(dtest,'eval'), (dtrain,'train')]`` and
+        a parameter containing ``('eval_metric': 'logloss')``,
+        the **evals_result** returns
+
+        .. code-block:: python
+
+            {'train': {'logloss': ['0.48253', '0.35953']},
+             'eval': {'logloss': ['0.480385', '0.357756']}}
+
+    verbose_eval : bool or int
+        Requires at least one item in **evals**.
+        If **verbose_eval** is True then the evaluation metric on the validation set is
+        printed at each boosting stage.
+        If **verbose_eval** is an integer then the evaluation metric on the validation set
+        is printed at every given **verbose_eval** boosting stage. The last boosting stage
+        / the boosting stage found by using **early_stopping_rounds** is also printed.
+        Example: with ``verbose_eval=4`` and at least one item in **evals**, an evaluation metric
+        is printed every 4 boosting stages, instead of every boosting stage.
+    learning_rates: list or function (deprecated - use callback API instead)
+        List of learning rate for each boosting round
+        or a customized function that calculates eta in terms of
+        current number of round and the total number of boosting round (e.g. yields
+        learning rate decay)
+    xgb_model : file name of stored xgb model or 'Booster' instance
+        Xgb model to be loaded before training (allows training continuation).
+    callbacks : list of callback functions
+        List of callback functions that are applied at end of each iteration.
+        It is possible to use predefined callbacks by using
+        :ref:`Callback API <callback_api>`.
+        Example:
+
+        .. code-block:: python
+
+            [xgb.callback.reset_learning_rate(custom_rates)]
+
+    Returns
+    -------
+    Booster : a trained booster model
+    """
+    params = xgb_parameter_checker(params,
+                                   num_boost_round,
+                                   skip_list=['max_depth', 'eta'])
+
+    return _auto_train_internal(params, dtrain,
+                                num_boost_round=num_boost_round,
+                                evals=evals,
+                                obj=obj, feval=feval,
+                                xgb_model=xgb_model, callbacks=callbacks)
 
 def _train_internal(params, dtrain,
                     num_boost_round=10, evals=(),
