@@ -20,18 +20,24 @@ def _param_rewrite(params, n, p):
     # (and therefore diversity) and improve overall training efficiency.
     if p * col_sample_bytree > 2000:
         params['colsample_bytree'] = 2000.0 / p
-        rabit.tracker_print("[ParamRewrite] colsample_bytree = {}\n".format(params['colsample_bytree']))
+        if rabit.get_rank() == 0:
+            msg = "[ParamRewrite] colsample_bytree = {}\n"
+            rabit.tracker_print(msg.format(params['colsample_bytree']))
 
     # When # of points are too large, automatically switch to stochastic
     # gradient boosting.
     subsample = params.get('subsample', 1)
     if n * subsample > 1e8:
         params['subsample'] = 1e6 * 1.0 / n
-        rabit.tracker_print("[ParamRewrite] subsample = {}\n".format(params['subsample']))
+        if rabit.get_rank() == 0:
+            msg = "[ParamRewrite] subsample = {}\n"
+            rabit.tracker_print(msg.format(params['subsample']))
 
     if 'convergence_criteria' not in params:
         params['convergence_criteria'] = '10:0:0.8'
-        rabit.tracker_print("[ParamRewrite] convergence_criteria = {}\n".format(params['convergence_criteria']))
+        if rabit.get_rank() == 0:
+            msg = "[ParamRewrite] convergence_criteria = {}\n"
+            rabit.tracker_print(msg.format(params['convergence_criteria']))
 
 def _auto_train_internal(params, dtrain,
                          num_boost_round=1000, evals=(),
