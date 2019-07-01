@@ -206,20 +206,54 @@ ETA_LOWER_BOUND = 0.0
 ETA_UPPER_BOUND = 1.0
 NUM_TREE_DEFAULT_VALUE = 100
 NUM_TREE_LOWER_BOUND = 0
-DEFAULT_METRIC = {'binary': 'auc', 'multi': 'merror', 'reg': 'rmse', 'rank': 'ndcg',\
+DEFAULT_METRIC = {'binary': 'error', 'multi': 'merror', 'reg': 'rmse', 'rank': 'ndcg',\
                   'survival': 'cox-nloglik'}
+
+
+def check_objective(params):
+    if 'objective' in params:
+        objective = params['objective']
+        if objective not in OBJECTIVE_LIST:
+            raise ParamError("The objective function '{}' is not supported.".format(objective))
+    else:
+        raise ParamError("The objective function is not specified.")
+
+def get_eval_metric(params):
+    if 'eval_metric' in params:
+        eval_metric = params['eval_metric']
+        if eval_metric not in METRIC_LIST:
+            checked = False
+            for metric_to_check in METRIC_CHECKLIST:
+                if metric_to_check in params['eval_metric']:
+                    mid_num = params['eval_metric'].strip(metric_to_check).rstrip('-')
+                    try:
+                        mid_num = float(mid_num)
+                    except ValueError:
+                        raise ParamError("A number required after '{}'".format(metric_to_check))
+                    checked = True
+            if not checked:
+                objective_type = objective.split(':')[0]
+                warnings.warn(param_invalid_value_info('eval_metric', DEFAULT_METRIC[objective_type]))
+                eval_metric = DEFAULT_METRIC[objective_type]
+        return eval_metric
+    else:
+        check_objective(params)
+        objective = params['objective']
+        objective_type = objective.split(':')[0]
+        return DEFAULT_METRIC[objective_type]
+
 
 def get_optimization_direction(params):
     maximize_score = False
-    metric = params['eval_metric']
+    metric = get_eval_metric(params)
     if any(metric.startswith(x) for x in MAXIMIZE_METRICS):
         maximize_score = True
 
     return maximize_score
 
-def xgb_parameter_checker(params, num_round, num_class=None, skip_list=[]):
+def check_xgb_parameter(params, num_round, num_class=None, skip_list=[]):
     """
-    XGBoost hyper-parameter checker.
+    Check XGBoost hyper-parameter.
 
     This function checks if the input hyper-parameters setting
     satisfies specific requirements and use default values for
@@ -243,12 +277,8 @@ def xgb_parameter_checker(params, num_round, num_class=None, skip_list=[]):
         configuration.
     """
     # check objective function
-    if 'objective' in params:
-        objective = params['objective']
-        if objective not in OBJECTIVE_LIST:
-            raise ParamError("The objective function '{}' is not supported.".format(objective))
-    else:
-        raise ParamError("The objective function is not specified.")
+    check_objective(params)
+    objective = params['objective']
 
     objective_type = objective.split(':')[0]
     # check number of classes in label

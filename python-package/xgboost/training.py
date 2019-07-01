@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 from .core import Booster, STRING_TYPES, XGBoostError, CallbackEnv, EarlyStopException
 from .compat import (SKLEARN_INSTALLED, XGBStratifiedKFold)
-from .automl_core import ConvergenceTester, xgb_parameter_checker, get_optimization_direction
+from .automl_core import ConvergenceTester, check_xgb_parameter, get_optimization_direction
 from . import rabit
 from . import callback
 
@@ -65,8 +65,7 @@ def _auto_train_internal(params, dtrain,
             params['eta'] = str(l)
             model = train(params, dtrain,
                           num_boost_round=num_boost_round,
-                          evals=evals,
-                          check_params=False)
+                          evals=evals)
             best_score = float(model.attr('best_score'))
             ct_l.add(best_score)
             rabit.tracker_print("depth = {}, learning rate = {}, best_score = {}\n\n".format(d, l, best_score))
@@ -162,9 +161,7 @@ def auto_train(params, dtrain, num_boost_round=1000, evals=(), obj=None, feval=N
     -------
     Booster : a trained booster model
     """
-    params = xgb_parameter_checker(params,
-                                   num_boost_round,
-                                   skip_list=['max_depth', 'eta'])
+    params = check_xgb_parameter(params, num_boost_round, skip_list=['max_depth', 'eta'])
 
     return _auto_train_internal(params, dtrain,
                                 num_boost_round=num_boost_round,
@@ -287,8 +284,7 @@ def _train_internal(params, dtrain,
 
 def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
           maximize=False, early_stopping_rounds=None, evals_result=None,
-          verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None,
-          check_params=True):
+          verbose_eval=True, xgb_model=None, callbacks=None, learning_rates=None):
     # pylint: disable=too-many-statements,too-many-branches, attribute-defined-outside-init
     """Train a booster with given parameters.
 
@@ -359,8 +355,6 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
         .. code-block:: python
 
             [xgb.callback.reset_learning_rate(custom_rates)]
-    check_params: bool, default True
-        Whether to check parameters.
 
     Returns
     -------
@@ -368,8 +362,6 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
     """
     callbacks = [] if callbacks is None else callbacks
 
-    if check_params:
-        params = xgb_parameter_checker(params, num_boost_round)
     maximize = get_optimization_direction(params)
 
     # Most of legacy advanced options becomes callbacks
