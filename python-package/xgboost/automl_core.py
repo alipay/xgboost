@@ -190,7 +190,7 @@ def param_invalid_value_info(param_name, default_value):
            .format(param_name, default_value)
 
 # Available values and bounds of hyper-parameters
-OBJECTIVE_LIST = ['reg:linear', 'reg:logistic', 'binary:logistic', 'binary:logitraw', \
+OBJECTIVE_LIST = ['reg:squarederror', 'reg:logistic', 'binary:logistic', 'binary:logitraw', \
      'binary:hinge', 'count:poisson', 'multi:softmax', 'multi:softprob',\
      'reg:gamma', 'reg:tweedie', 'rank:ndcg', 'rank:pairwise', \
      'rank:map', 'survival:cox']
