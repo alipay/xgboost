@@ -1,7 +1,7 @@
 """Unit tests for AutoML Library functions."""
 import unittest
 import os
-import automl_core
+from xgboost.automl_core import ParamError, check_xgb_parameter
 import xgboost as xgb
 
 class TestAutomlCore(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestAutomlCore(unittest.TestCase):
                            'eta': 0.3, 'num_round': 100, 'eval_metric': 'error', \
                            'maximize_eval_metric': 'False'}
         with self.assertWarns(Warning):
-            params = automl_core.check_xgb_parameter(params, 0, 2)
+            params = check_xgb_parameter(params, 0, 2)
         self.assertEqual(params, expected_params)
 
     def test_objective(self):
@@ -26,16 +26,16 @@ class TestAutomlCore(unittest.TestCase):
         A test for the objective
         """
         params = {}
-        with self.assertRaises(automl_core.ParamError):
-            automl_core.check_xgb_parameter(params, 100, 2)
+        with self.assertRaises(ParamError):
+            check_xgb_parameter(params, 100, 2)
 
     def test_num_class(self):
         """
         A test for number of classes
         """
         params = {'objective': 'binary:logistic'}
-        with self.assertRaises(automl_core.ParamError):
-            automl_core.check_xgb_parameter(params, 100, 4)
+        with self.assertRaises(ParamError):
+            check_xgb_parameter(params, 100, 4)
 
     def test_metric(self):
         """
@@ -44,8 +44,8 @@ class TestAutomlCore(unittest.TestCase):
         params = {'objective': 'binary:logistic', 'max_depth': 6, \
                   'learning_rate': 0.3, 'num_round': 100, \
                   'eval_metric': 'ndcg@ab'}
-        with self.assertRaises(automl_core.ParamError):
-            automl_core.check_xgb_parameter(params, 100, 2)
+        with self.assertRaises(ParamError):
+            check_xgb_parameter(params, 100, 2)
 
     def test_metric_optimization_direction(self):
         """
@@ -54,7 +54,7 @@ class TestAutomlCore(unittest.TestCase):
         params = {'objective': 'binary:logistic', 'max_depth': 6, \
                   'learning_rate': 0.3, 'num_round': 100, \
                   'eval_metric': 'auc'}
-        automl_core.check_xgb_parameter(params, 100)
+        check_xgb_parameter(params, 100)
         maximize_eval_metric = params['maximize_eval_metric'].lower() == 'true'
         self.assertTrue(maximize_eval_metric)
 

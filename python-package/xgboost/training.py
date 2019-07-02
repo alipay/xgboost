@@ -362,7 +362,8 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
     """
     callbacks = [] if callbacks is None else callbacks
 
-    maximize = get_optimization_direction(params)
+    maximize_metric = get_optimization_direction(params)
+    op_direction = maximize if maximize_metric is None else maximize_metric
 
     # Most of legacy advanced options becomes callbacks
     if isinstance(verbose_eval, bool) and verbose_eval:
@@ -373,13 +374,13 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
 
     if early_stopping_rounds is not None:
         callbacks.append(callback.early_stop(early_stopping_rounds,
-                                             maximize=maximize,
+                                             maximize=op_direction,
                                              verbose=bool(verbose_eval)))
 
-    if params.get('convergence_criteria') is not None:
+    if isinstance(params, dict) and params.get('convergence_criteria') is not None:
         callbacks.append(callback.convergence_test(params.get('convergence_criteria'),
-                                                   maximize = maximize,
-                                                   verbose = bool(verbose_eval)))
+                                                   maximize=op_direction,
+                                                   verbose=bool(verbose_eval)))
 
     if evals_result is not None:
         callbacks.append(callback.record_evaluation(evals_result))

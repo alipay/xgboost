@@ -233,7 +233,6 @@ def get_eval_metric(params):
                     checked = True
             if not checked:
                 objective_type = objective.split(':')[0]
-                warnings.warn(param_invalid_value_info('eval_metric', DEFAULT_METRIC[objective_type]))
                 eval_metric = DEFAULT_METRIC[objective_type]
         return eval_metric
     else:
@@ -245,11 +244,14 @@ def get_eval_metric(params):
 
 def get_optimization_direction(params):
     maximize_score = False
-    metric = get_eval_metric(params)
-    if any(metric.startswith(x) for x in MAXIMIZE_METRICS):
-        maximize_score = True
+    try:
+        metric = get_eval_metric(params)
+        if any(metric.startswith(x) for x in MAXIMIZE_METRICS):
+            maximize_score = True
 
-    return maximize_score
+        return maximize_score
+    except Exception:
+        return None
 
 def check_xgb_parameter(params, num_round, num_class=None, skip_list=[]):
     """
@@ -363,6 +365,8 @@ def check_xgb_parameter(params, num_round, num_class=None, skip_list=[]):
             params['eval_metric'] = DEFAULT_METRIC[objective_type]
 
     maximize_score = get_optimization_direction(params)
+    if maximize_score is None:
+        raise ParamError("Something went wrong.")
     params['maximize_eval_metric'] = str(maximize_score)
 
     return params
