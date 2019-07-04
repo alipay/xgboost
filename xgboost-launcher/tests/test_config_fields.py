@@ -19,7 +19,7 @@ import yaml
 from yaml import CLoader as Loader
 
 from config_helper import load_config, dump_config
-from .. import config_fields
+import config_fields
 
 __data_fields_demo = """
 data_source:

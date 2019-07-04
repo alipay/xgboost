@@ -35,7 +35,7 @@ if [ ${TASK} == "launcher_test" ]; then
     cd python-package && python setup.py install && cd ..
 
     python -m pip install graphviz pytest pytest-cov codecov
-    python -m pytest -v --fulltrace -s xgboost-launcher/launcher/tests --cov=xgboost-launcher/launcher || exit -1
+    python -m pytest -v --fulltrace -s xgboost-launcher/tests --cov=xgboost-launcher/launcher || exit -1
     codecov
 fi
 

@@ -19,7 +19,7 @@ from typing import NamedTuple
 
 import pytest
 
-from ..config_helper import load_config, dump_config, field_keys_equal, fields_equal
+from config_helper import load_config, dump_config, field_keys_equal, fields_equal
 
 
 class Education(NamedTuple):
