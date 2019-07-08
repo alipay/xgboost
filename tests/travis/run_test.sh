@@ -31,8 +31,9 @@ if [ ${TASK} == "launcher_test" ]; then
     source activate python3
     python --version
     conda install numpy scipy pandas pyodps oss2 pyyaml
-    # we need install xgboost python-package
+    # install xgboost python-package && xgblauncher
     cd python-package && python setup.py install && cd ..
+    cd xgboost-launcher && python setup.py install && cd ..
 
     python -m pip install graphviz pytest pytest-cov codecov
     python -m pytest -v --fulltrace -s xgboost-launcher/tests --cov=xgboost-launcher/launcher || exit -1
