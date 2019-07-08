@@ -33,7 +33,7 @@ if [ ${TASK} == "launcher_test" ]; then
     conda install numpy scipy pandas pyodps oss2 pyyaml
     # install xgboost python-package
     cd python-package && python setup.py install && cd ..
-    export PYTHONPATH=${PYTHONPATH}:${PWD}/xgboost-launcher/launcher
+    export PYTHONPATH=${PYTHONPATH}:${PWD}/xgboost-launcher
 
     python -m pip install graphviz pytest pytest-cov codecov
     python -m pytest -v --fulltrace -s xgboost-launcher/tests --cov=xgboost-launcher/launcher || exit -1
