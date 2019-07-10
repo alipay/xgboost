@@ -111,7 +111,7 @@ class TestDataSource(DataSource):
         pass
 
     def get_feat_mat(self):
-        return self._data[:, :self.num_features]
+        return self._data[:, :self._num_features]
 
     def get_label(self):
         if self._label < 0:
