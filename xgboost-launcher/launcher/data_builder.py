@@ -126,7 +126,11 @@ class CSRMatBuilder(XGBoostDataBuilder):
             if count % min([self.logging_interval, row_size]) == 0:
                 logging.info('CSRMatrixBuilder has fetched %d records.' % count)
             if count % row_size == 0:
-                mat = csr_matrix((data, ind, indptr), [row_size, col_size])
+                # if col_size == 0, let csr_matrix do shape inference.
+                if col_size > 0:
+                    mat = csr_matrix((data, ind, indptr), [row_size, col_size])
+                else:
+                    mat = csr_matrix((data, ind, indptr))
                 data.clear()
                 ind.clear()
                 indptr.clear()
@@ -144,5 +148,8 @@ class CSRMatBuilder(XGBoostDataBuilder):
                 yield mat, label, group, weight, base_margin, append_info
 
         if data:
-            mat = csr_matrix((data, ind, indptr), [count % row_size, col_size])
+            if col_size > 0:
+                mat = csr_matrix((data, ind, indptr), [count % row_size, col_size])
+            else:
+                mat = csr_matrix((data, ind, indptr))
             yield mat, label_buf, group_buf, weight_buf, base_margin_buf, append_info_buf

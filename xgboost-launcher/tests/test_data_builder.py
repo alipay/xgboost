@@ -141,47 +141,61 @@ class TestDataSource(DataSource):
 
 def test_d_matrix_built_by_csr_mat_builder():
     ds = TestDataSource(100, 6)
+
     # test full batch transform
-    builder = CSRMatBuilder(ds)
-    # we can't fetch data from a DMatrix, so just check some meta
-    data_iter = builder.build()
-    data = data_iter.__next__()
-    with pytest.raises(StopIteration):
-        data_iter.__next__()
-    assert not data.append_info
-    assert data.d_matrix.num_row() == 100
-    assert data.d_matrix.num_col() == 6
-    # check data equality between csr_matrix and source data
-    csr_mat = builder._build_csr().__next__()[0]
-    assert np.all(csr_mat.todense() == ds.get_feat_mat())
+    def full_batch(_ds: TestDataSource):
+        builder = CSRMatBuilder(ds)
+        # we can't fetch data from a DMatrix, so just check some meta
+        data_iter = builder.build()
+        data = data_iter.__next__()
+        with pytest.raises(StopIteration):
+            data_iter.__next__()
+        assert not data.append_info
+        assert data.d_matrix.num_row() == 100
+        assert data.d_matrix.num_col() == 6
+        # check data equality between csr_matrix and source data
+        csr_mat = builder._build_csr().__next__()[0]
+        assert np.all(csr_mat.todense() == ds.get_feat_mat())
+
+    full_batch(ds)
 
     # test mini batch transform
-    builder = CSRMatBuilder(ds, batch_size=10)
-    data_iter = builder.build()
-    for i in range(10):
-        data = data_iter.__next__()
-        assert data.d_matrix.num_row() == 10
-        assert data.d_matrix.num_col() == 6
-    with pytest.raises(StopIteration):
-        data_iter.__next__()
+    def mini_batch(_ds: TestDataSource):
+        builder = CSRMatBuilder(ds, batch_size=10)
+        data_iter = builder.build()
+        for i in range(10):
+            data = data_iter.__next__()
+            assert data.d_matrix.num_row() == 10
+            assert data.d_matrix.num_col() == 6
+        with pytest.raises(StopIteration):
+            data_iter.__next__()
 
-    batches = [np.array(batch[0].todense()) for batch in builder._build_csr()]
-    data_from_csr = np.concatenate(batches, axis=0)
-    assert np.all(data_from_csr == ds.get_feat_mat())
+        batches = [np.array(batch[0].todense()) for batch in builder._build_csr()]
+        data_from_csr = np.concatenate(batches, axis=0)
+        assert np.all(data_from_csr == ds.get_feat_mat())
 
-    builder = CSRMatBuilder(ds, batch_size=13)
-    data_iter = builder.build()
-    for i in range(7):
-        data = data_iter.__next__()
-        assert data.d_matrix.num_row() == 13
-        assert data.d_matrix.num_col() == 6
-    assert data_iter.__next__().d_matrix.num_row() == 9
-    with pytest.raises(StopIteration):
-        data_iter.__next__()
+    mini_batch(ds)
 
-    batches = [np.array(batch[0].todense()) for batch in builder._build_csr()]
-    data_from_csr = np.concatenate(batches, axis=0)
-    assert np.all(data_from_csr == ds.get_feat_mat())
+    def mini_batch_with_remainder(_ds: TestDataSource):
+        builder = CSRMatBuilder(_ds, batch_size=13)
+        data_iter = builder.build()
+        for i in range(7):
+            data = data_iter.__next__()
+            assert data.d_matrix.num_row() == 13
+            assert data.d_matrix.num_col() == 6
+        assert data_iter.__next__().d_matrix.num_row() == 9
+        with pytest.raises(StopIteration):
+            data_iter.__next__()
+
+        batches = [np.array(batch[0].todense()) for batch in builder._build_csr()]
+        data_from_csr = np.concatenate(batches, axis=0)
+        assert np.all(data_from_csr == _ds.get_feat_mat())
+
+    mini_batch_with_remainder(ds)
+
+    # test shape inference
+    ds.num_features = 0
+    mini_batch_with_remainder(ds)
 
 
 def test_other_cols_built_by_csr_mat_builder():

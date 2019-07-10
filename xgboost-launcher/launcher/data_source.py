@@ -38,9 +38,11 @@ class DataSource:
         assert config_helper.field_keys_equal(column_conf, config_fields.ColumnFields)
         self.col_conf = column_conf
         self.source_conf = source_conf
-        self.num_features = max([
-            column_conf.features.feature_num,
-            len(column_conf.features.columns)])
+        if column_conf.features.is_sparse:
+            # if num_features <= 0, compute num_col internally.
+            self.num_features = column_conf.features.feature_num
+        else:
+            self.num_features = len(column_conf.features.columns)
 
     @abstractmethod
     def read(self) -> Iterator[XGBoostRecord]:
