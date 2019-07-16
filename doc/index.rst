@@ -27,4 +27,4 @@ Contents
   JVM package <jvm/index>
   Julia package <julia>
   CLI interface <cli>
-  contribute
+  contrib/index
