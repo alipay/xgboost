@@ -10,7 +10,7 @@ register_model_source('local', None, LocalModelSource)
 
 
 def test_launcher_model():
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_resources/test_booster_model')
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_resources/test_booster')
     model = load_launcher_model(ModelFields(model_path=path))
     assert isinstance(model.meta, XGBoostTrainFields)
     params = model.meta.params
