@@ -1,5 +1,5 @@
 import os
-from tempfile import mktemp
+import random
 
 from launcher import config_fields
 from launcher.config_fields import ModelFields, XGBoostTrainFields
@@ -27,7 +27,7 @@ def test_launcher_model():
     tmp_path = os.path.join(file_path, 'test_resources/tmp/')
     if not os.path.exists(tmp_path):
         os.mkdir(tmp_path)
-    tmp_path = mktemp(prefix=tmp_path)[5:]
+    tmp_path = os.path.join(tmp_path, str(random.randint(100000)))
     save_launcher_model(
         model.booster,
         config_fields.TrainFields(model.meta, None, ModelFields(model_path=tmp_path)))
