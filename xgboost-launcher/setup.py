@@ -63,7 +63,7 @@ setup(
     version=LAUCNHER_VERSION,
     description="XGBoost Launcher Package",
     install_requires=[
-        'pandas',
+        'pandas==0.23.0',
         'pyyaml',
         'psutil',
         'oss2',
