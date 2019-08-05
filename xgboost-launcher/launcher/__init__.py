@@ -9,8 +9,6 @@ from .model_sources.local_model_source import LocalModelSource
 from .config_fields import LearningFields, DataFields, ModelFields, JobFields, TrainFields, PredictFields
 from .rabit_context import RabitContext
 
-XGBOOST_LAUNCHER_ENV_TAG = 'xgb_launcher_env'
-
 VERSION_FILE = os.path.join(os.path.dirname(__file__), 'VERSION')
 with open(VERSION_FILE) as f:
     __version__ = f.read().strip()

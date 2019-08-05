@@ -1,11 +1,11 @@
 import os
 import random
 
+from launcher import LocalModelSource
 from launcher import config_fields
 from launcher.config_fields import ModelFields, LearningFields
 from launcher.model_helper import load_launcher_model, save_launcher_model
 from launcher.model_source import register_model_source
-from launcher.model_sources.local_model_source import LocalModelSource
 
 register_model_source('local', None, LocalModelSource)
 

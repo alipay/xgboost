@@ -1,9 +1,9 @@
 from typing import Iterator, NamedTuple, List
 
-from launcher import config_helper
 from launcher import config_fields
-from launcher.data_units import XGBoostResult, XGBoostRecord
+from launcher import config_helper
 from launcher.data_source import DataSource, register_data_source, create_data_source_init_fn
+from launcher.data_units import XGBoostResult, XGBoostRecord
 from launcher.model_source import register_model_source, ModelSource, create_model_source
 
 

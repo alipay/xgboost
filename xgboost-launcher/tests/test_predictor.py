@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-from launcher.model_source import register_model_source, LocalModelSource
+from launcher import LocalModelSource
+from launcher import register_model_source
 from launcher.predictor import binary_logistic_converter, multi_softprob_converter, common_converter, XGBoostResultBatch
 
 register_model_source('local', None, LocalModelSource)

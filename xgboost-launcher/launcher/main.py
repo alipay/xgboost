@@ -8,7 +8,7 @@ import yaml
 from xgboost import automl_core
 
 from launcher.model_sources.local_model_source import LocalModelSource
-from . import config_helper, XGBOOST_LAUNCHER_ENV_TAG
+from . import config_helper
 from . import config_fields
 from . import model_helper
 from .data_builder import XGBoostDataBuilder, XGBoostData
@@ -20,6 +20,8 @@ from .model_sources.oss_model_source import OSSFields, OssModelSource
 from .predictor import XGBoostPredictor
 from .rabit_context import RabitContext
 from .utils import backend_logging, logger
+
+XGBOOST_LAUNCHER_ENV_TAG = 'xgb_launcher_env'
 
 # TODO: register sources dynamically
 register_model_source('oss', OSSFields, OssModelSource)
