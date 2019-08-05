@@ -23,7 +23,7 @@ class BoosterFields(NamedTuple):
     verbosity: int = None
 
 
-class XGBoostTrainFields(NamedTuple):
+class LearningFields(NamedTuple):
     params: BoosterFields
     num_boost_round: int = 50
     # if true, using experimental feature: xgboost.auto_train
@@ -117,7 +117,7 @@ class ModelFields(NamedTuple):
 
 
 class TrainFields(NamedTuple):
-    xgboost_conf: XGBoostTrainFields
+    xgboost_conf: LearningFields
     data_conf: DataFields
     model_conf: ModelFields
 

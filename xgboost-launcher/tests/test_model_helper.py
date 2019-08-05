@@ -2,9 +2,10 @@ import os
 import random
 
 from launcher import config_fields
-from launcher.config_fields import ModelFields, XGBoostTrainFields
+from launcher.config_fields import ModelFields, LearningFields
 from launcher.model_helper import load_launcher_model, save_launcher_model
-from launcher.model_source import register_model_source, LocalModelSource
+from launcher.model_source import register_model_source
+from launcher.model_sources.local_model_source import LocalModelSource
 
 register_model_source('local', None, LocalModelSource)
 
@@ -13,7 +14,7 @@ def test_launcher_model():
     file_path = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(file_path, 'test_resources/test_booster')
     model = load_launcher_model(ModelFields(model_path=path))
-    assert isinstance(model.meta, XGBoostTrainFields)
+    assert isinstance(model.meta, LearningFields)
     params = model.meta.params
     assert params.objective == 'multi:softprob'
     assert params.num_class == 3

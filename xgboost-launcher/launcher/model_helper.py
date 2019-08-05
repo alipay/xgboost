@@ -9,7 +9,7 @@ from .model_source import create_model_source
 
 
 class LauncherModel:
-    def __init__(self, bst: xgb.Booster, meta: config_fields.XGBoostTrainFields = None):
+    def __init__(self, bst: xgb.Booster, meta: config_fields.LearningFields = None):
         self.booster = bst
         if meta is not None:
             self.meta = meta
@@ -21,7 +21,7 @@ class LauncherModel:
             assert attrs.get('kind', '') == 'xgboost_launcher_model', \
                 'Failed to find attr[kind]="xgboost_launcher_model" in booster, not a LauncherModel!'
             meta = json.loads(attrs.get('config'))
-            self.meta = config_helper.load_config(config_fields.XGBoostTrainFields, **meta)
+            self.meta = config_helper.load_config(config_fields.LearningFields, **meta)
 
 
 def save_launcher_model(bst: xgb.Booster, conf: config_fields.TrainFields):

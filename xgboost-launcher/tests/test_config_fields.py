@@ -104,8 +104,8 @@ def test_model_fields():
 
 def test_xgb_train_fields():
     conf = yaml.load(__xgb_train_fields_demo, Loader)
-    fields = load_config(config_fields.XGBoostTrainFields, **conf)
-    assert isinstance(fields, config_fields.XGBoostTrainFields)
+    fields = load_config(config_fields.LearningFields, **conf)
+    assert isinstance(fields, config_fields.LearningFields)
     assert fields.auto_train
     assert fields.num_boost_round == 500
     expected = {k: v for k, v in config_fields.BoosterFields()._asdict().items() if v is not None}
@@ -139,7 +139,7 @@ def test_job_fields():
     assert fields.job == config_fields.JobType.TRAIN
     assert fields.train_conf.data_conf == load_config(config_fields.DataFields, **data_conf)
     assert fields.train_conf.model_conf == load_config(config_fields.ModelFields, **model_conf)
-    assert fields.train_conf.xgboost_conf == load_config(config_fields.XGBoostTrainFields, **xgb_conf)
+    assert fields.train_conf.xgboost_conf == load_config(config_fields.LearningFields, **xgb_conf)
     fields = load_config(config_fields.JobFields, **{
         'job': 'predict',
         'predict_conf': {
