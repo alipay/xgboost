@@ -29,7 +29,7 @@ for libfile in libpath['find_lib_path']():
 print("Install libxgboost from: %s" % LIB_PATH)
 # Please use setup_pip.py for generating and deploying pip installation
 # detailed instruction in setup_pip.py
-setup(name='xgboost',
+setup(name='ant-xgboost',
       version=open(os.path.join(CURRENT_DIR, 'xgboost/VERSION')).read().strip(),
       description="XGBoost Python Package",
       long_description=io.open(os.path.join(CURRENT_DIR, 'README.rst'), encoding='utf-8').read(),
@@ -37,8 +37,8 @@ setup(name='xgboost',
           'numpy',
           'scipy',
       ],
-      maintainer='Hyunsu Cho',
-      maintainer_email='chohyu01@cs.washington.edu',
+      maintainer='Xu Xiao',
+      maintainer_email='lovedreamf@gmail.com',
       zip_safe=False,
       packages=find_packages(),
       # this will use MANIFEST.in during install where we specify additional files,
@@ -55,4 +55,4 @@ setup(name='xgboost',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7'],
       python_requires='>=3.4',
-      url='https://github.com/dmlc/xgboost')
+      url='https://github.com/alipay/ant-xgboost')
