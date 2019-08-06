@@ -1,68 +1,29 @@
 import logging
 import os
-import subprocess
 import sys
 import shutil
 
-from pip._internal import main as pip_main
 from setuptools import setup, find_packages
 
 sys.path.insert(0, '.')
 
 CURRENT_DIR = os.path.dirname(__file__)
 
-LAUCNHER_VERSION = open(os.path.join(CURRENT_DIR, 'launcher/VERSION')).read().strip()
-
-REQUIRED_XGBOOST_VERSION = open(
-    os.path.join(CURRENT_DIR, '../python-package/xgboost/VERSION')).read().strip()
-
 logger = logging.getLogger(__name__)
 
+file_path = os.path.dirname(os.path.abspath(__file__))
+shutil.copyfile(
+    os.path.join(file_path, 'launcher/version.py'),
+    os.path.join(file_path,'version.py'))
+from version import get_xgboost_version, get_launcher_version
 
-def install_xgboost():
-    logger.info('\ninstall latest Ant-XGBoost from source code...\n')
-    os.chdir('..')
-    if os.path.exists('build'):
-        shutil.rmtree('build')
-    os.mkdir('build')
-    os.chdir('build')
-    if subprocess.run(['cmake', '..']).returncode or subprocess.run(['make', '-j4']).returncode:
-        raise EnvironmentError('Failed to build xgboost library!')
-    os.chdir('../python-package')
-    if subprocess.run(['python3', 'setup.py', 'install']).returncode:
-        raise EnvironmentError('Failed to install xgboost python package!')
-    shutil.rmtree('../build')
-    os.chdir('../xgboost-launcher')
-
-
-def check_and_install_xgboost():
-    try:
-        import xgboost
-        assert xgboost.__version__ == REQUIRED_XGBOOST_VERSION
-        from xgboost import automl_core
-        logger.info('Latest Ant-XGBoost has already been installed! Install xgblauncher directly!\n')
-    except Exception as e:
-        try:
-            import xgboost
-            logger.warning('\nFound incompatible xgboost version, try to remove it...\n')
-            if pip_main(['show', 'xgboost']) != 0:
-                raise EnvironmentError(
-                    'xgboost of dismatch version detected, which is not installed via pip. '
-                    'Please uninstall it manually!')
-            pip_main(['uninstall', 'xgboost', '-y'])
-        except Exception as e:
-            pass
-        finally:
-            install_xgboost()
-
-
-check_and_install_xgboost()
-logger.info('\ninstall xgblauncher...\n')
+logger.info('\ninstall xgboost-launcher...\n')
 setup(
-    name='xgblauncher',
-    version=LAUCNHER_VERSION,
+    name='xgboost-launcher',
+    version=get_launcher_version(),
     description="XGBoost Launcher Package",
     install_requires=[
+        'ant-xgboost==%s' % get_xgboost_version(),
         'pandas==0.23.0',
         'pyyaml',
         'psutil',
@@ -83,3 +44,5 @@ setup(
                  'Programming Language :: Python :: 3.7'],
     python_requires='>=3.6',
     url='https://github.com/alipay/ant-xgboost')
+
+os.remove(os.path.join(file_path,'version.py'))

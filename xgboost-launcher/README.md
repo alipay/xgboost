@@ -10,16 +10,12 @@ What's more, with user-defined data sources and model sources, xgboost-launcher 
 
 #### How to install
 
-XGBoost-Launcher is a separate python package (based on python >= 3.6), which depends on xgboost python package.
+XGBoost-Launcher is a separate python package (required python >= 3.6), which depends on xgboost python package.
 
-Due to auto-training integration, xgboost-launcher is only compatible with ant-xgboost.
-
-Running the code below, XGBoost-Launcher and its dependencies will be installed.
-__Meanwhile, the setup program will uninstall existing xgboost in current environment, if is not compatible with xgboost-launcher.__ 
+Due to auto-training integration, xgboost-launcher is depended on [ant-xgboost](https://pypi.org/manage/project/ant-xgboost).
 
 ```bash
-cd xgboost-launcher
-python setup.py install
+pip install xgboost-launcher
 ```
 
 <br>

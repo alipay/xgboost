@@ -7,15 +7,15 @@ import xgboost as xgb
 import yaml
 from xgboost import automl_core
 
-from launcher.model_sources.local_model_source import LocalModelSource
-from . import config_helper
 from . import config_fields
+from . import config_helper
 from . import model_helper
 from .data_builder import XGBoostDataBuilder, XGBoostData
 from .data_source import create_data_source_init_fn, register_data_source, DataSource
 from .data_sources.odps.odps_data_source import ODPSFields, ODPSDataSource
 from .env_parser import extract_dist_env
 from .model_source import register_model_source
+from .model_sources.local_model_source import LocalModelSource
 from .model_sources.oss_model_source import OSSFields, OssModelSource
 from .predictor import XGBoostPredictor
 from .rabit_context import RabitContext

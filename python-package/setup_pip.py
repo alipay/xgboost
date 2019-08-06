@@ -41,22 +41,15 @@ if len(sys.argv) < 2 or sys.argv[1] != 'sdist':
 
     LIB_PATH = libpath['find_lib_path']()
 
-setup(name='xgboost',
+setup(name='ant-xgboost',
       version=open(os.path.join(CURRENT_DIR, 'xgboost/VERSION')).read().strip(),
       description='XGBoost Python Package',
       install_requires=[
           'numpy',
           'scipy',
       ],
-      extras_require={
-          'pandas': ['pandas'],
-          'sklearn': ['sklearn'],
-          'dask': ['dask', 'pandas', 'distributed'],
-          'datatable': ['datatable'],
-          'plotting': ['graphviz', 'matplotlib']
-      },
-      maintainer='Hyunsu Cho',
-      maintainer_email='chohyu01@cs.washington.edu',
+      maintainer='Xu Xiao',
+      maintainer_email='lovedreamf@gmail.com',
       zip_safe=False,
       packages=find_packages(),
       # don't need this and don't use this, give everything to MANIFEST.in
@@ -81,4 +74,4 @@ setup(name='xgboost',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7'],
       python_requires='>=3.4',
-      url='https://github.com/dmlc/xgboost')
+      url='https://github.com/alipay/ant-xgboost')

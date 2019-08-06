@@ -50,8 +50,8 @@ setup(name='xgboost',
           'datatable': ['datatable'],
           'plotting': ['graphviz', 'matplotlib']
       },
-      maintainer='Hyunsu Cho',
-      maintainer_email='chohyu01@cs.washington.edu',
+      maintainer='Xu Xiao',
+      maintainer_email='lovedreamf@gmail.com',
       zip_safe=False,
       packages=find_packages(),
       # this will use MANIFEST.in during install where we specify additional files,
@@ -68,4 +68,4 @@ setup(name='xgboost',
                    'Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7'],
       python_requires='>=3.4',
-      url='https://github.com/dmlc/xgboost')
+      url='https://github.com/alipay/ant-xgboost')
