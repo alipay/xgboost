@@ -30,7 +30,7 @@ if [ ${TASK} == "launcher_test" ]; then
     echo "-------------------------------"
     source activate python3
     python --version
-    pip install numpy scipy pandas pyyaml psutil pyodps oss2
+    pip install numpy scipy pandas==0.23.0 pyyaml psutil pyodps oss2
     # install xgboost python-package
     cd python-package && python setup.py install && cd ..
     export PYTHONPATH=${PYTHONPATH}:${PWD}/xgboost-launcher

@@ -10,11 +10,11 @@ What's more, with user-defined data sources and model sources, xgboost-launcher 
 
 #### How to install
 
-XGBoost-Launcher is a separate python package (based on python >= 3.6), which depend on xgboost python package.
+XGBoost-Launcher is a separate python package (based on python >= 3.6), which depends on xgboost python package.
 
 Due to auto-training integration, xgboost-launcher is only compatible with ant-xgboost.
 
-Running below codes, XGBoost-Launcher and its dependencies on will be installed.
+Running the code below, XGBoost-Launcher and its dependencies will be installed.
 __Meanwhile, the setup program will uninstall existing xgboost in current environment, if is not compatible with xgboost-launcher.__ 
 
 ```bash
@@ -26,11 +26,11 @@ python setup.py install
 
 #### How to use
 
-Running with united configure is a recommended way to launch xgboost-launcher, because it is easy to package for remote cluster (e.g. k8s) submission. 
+Running with unified configure is a recommended way to launch xgboost-launcher, because it is easy to package for remote cluster (e.g. k8s, yarn) submission. 
 
-##### run locally with united configure
+##### run locally with unified configure
 
-Here is a demo to run a stand-alone job with united configure.
+Here is a demo to run a standalone job with unified configure.
 
 _For now, no local data source is available, so we just provide a demo with [ODPS](https://github.com/aliyun/aliyun-odps-python-sdk) data source._
 

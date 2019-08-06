@@ -55,7 +55,7 @@ def train_pipeline(conf: config_fields.TrainFields):
         current = env.iteration
         logger.info('iteration: %d / %d' % (current + 1, env.end_iteration))
 
-    def build_train_d_matrix(data_source: DataSource):
+    def build_dmat(data_source: DataSource):
         d_matrix = None
         for xgboost_data in data_prepare(data_source, conf.data_conf.builder):
             if d_matrix is None:
@@ -70,19 +70,13 @@ def train_pipeline(conf: config_fields.TrainFields):
     ds, vds = create_data_source(conf.data_conf)
     with RabitContext(extract_dist_env()) as ctx:
         logger.info("start build training matrix...")
-        train_mat = build_train_d_matrix(ds)
+        train_mat = build_dmat(ds)
         logger.info("start build validating matrix...")
-        valid_mat = build_train_d_matrix(vds) if vds else None
+        valid_mat = build_dmat(vds) if vds else None
 
         ctx.client_init()
 
         xgb_conf = config_helper.dump_config(conf.xgboost_conf)
-        # do param checking and rewriting
-        xgb_conf['params'] = automl_core.check_xgb_parameter(
-            xgb_conf['params'],
-            xgb_conf['num_boost_round'],
-            skip_list=['max_depth', 'eta'])
-        logger.info('xgboost conf after param checking(rewriting): %s' % json.dumps(xgb_conf, indent=2))
 
         eval_mats = [(train_mat, 'train')]
         if valid_mat is not None:
@@ -92,8 +86,15 @@ def train_pipeline(conf: config_fields.TrainFields):
         xgb_conf.update(reserved_args)
 
         if xgb_conf.pop('auto_train'):
+            logger.info('xgboost conf for auto-train: %s' % json.dumps(xgb_conf, indent=2))
+            # param checking and rewriting will be applied in auto_train
             bst = xgb.auto_train(**xgb_conf)
         else:
+            # do param checking and rewriting
+            xgb_conf['params'] = automl_core.check_xgb_parameter(
+                params=xgb_conf['params'],
+                num_round=xgb_conf['num_boost_round'])
+            logger.info('xgboost conf after param checking(rewriting): %s' % json.dumps(xgb_conf, indent=2))
             bst = xgb.train(**xgb_conf)
 
         model_helper.save_launcher_model(bst, conf)
