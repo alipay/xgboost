@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 file_path = os.path.dirname(os.path.abspath(__file__))
 shutil.copyfile(
     os.path.join(file_path, 'launcher/version.py'),
-    os.path.join(file_path,'version.py'))
+    os.path.join(file_path, 'version.py'))
 from version import get_xgboost_version, get_launcher_version
 
 logger.info('\ninstall xgboost-launcher...\n')

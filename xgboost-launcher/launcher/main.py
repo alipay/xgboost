@@ -83,10 +83,10 @@ def train_pipeline(conf: config_fields.TrainFields):
             eval_mats.append((valid_mat, 'eval'))
         callbacks = [_iteration_progress_callback]
         reserved_args = {'dtrain': train_mat, 'evals': eval_mats, 'callbacks': callbacks}
-        xgb_conf.update(reserved_args)
 
         if xgb_conf.pop('auto_train'):
             logger.info('xgboost conf for auto-train: %s' % json.dumps(xgb_conf, indent=2))
+            xgb_conf.update(reserved_args)
             # param checking and rewriting will be applied in auto_train
             bst = xgb.auto_train(**xgb_conf)
         else:
@@ -95,6 +95,7 @@ def train_pipeline(conf: config_fields.TrainFields):
                 params=xgb_conf['params'],
                 num_round=xgb_conf['num_boost_round'])
             logger.info('xgboost conf after param checking(rewriting): %s' % json.dumps(xgb_conf, indent=2))
+            xgb_conf.update(reserved_args)
             bst = xgb.train(**xgb_conf)
 
         model_helper.save_launcher_model(bst, conf)
