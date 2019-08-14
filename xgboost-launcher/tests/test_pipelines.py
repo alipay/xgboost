@@ -7,16 +7,16 @@ from launcher import DataSource, XGBoostResult, XGBoostRecord, register_data_sou
 file_path = os.path.dirname(os.path.abspath(__file__))
 
 
-class AgaricusDSConfig(NamedTuple):
+class TestDSConfig(NamedTuple):
     is_train: bool
 
 
-class AgaricusDataSource(DataSource):
+class TestDataSource(DataSource):
     def __init__(self, rank: int, num_worker: int,
                  column_conf: cf.ColumnFields,
                  source_conf):
         super().__init__(rank, num_worker, column_conf, source_conf)
-        assert isinstance(source_conf, AgaricusDSConfig)
+        assert isinstance(source_conf, TestDSConfig)
         self._is_train = source_conf.is_train
 
     def read(self) -> Iterator[XGBoostRecord]:
@@ -45,25 +45,25 @@ class AgaricusDataSource(DataSource):
             assert ret.classification_prob > 0.9
 
 
-register_data_source('Agaricus', AgaricusDSConfig, AgaricusDataSource)
+register_data_source('test', TestDSConfig, TestDataSource)
 
 
 def test_train_and_test_pipeline():
-    ds_fields = cf.DataSourceFields('Agaricus', {'is_train': True})
-    # ColumnFields is unnecessary for AgaricusDataSource, so we just fill it with blank.
+    ds_fields = cf.DataSourceFields('test', {'is_train': True})
+    # ColumnFields is unnecessary for TestDataSource, so we just fill it with blank.
     data_fields = cf.DataFields(
         data_source=ds_fields,
         column_format=cf.ColumnFields(cf.FeatureFields([])))
     learning_fields = cf.LearningFields(
         num_boost_round=30,
         params=cf.BoosterFields(verbosity=3, eval_metric='auc'))
-    model_path = os.path.join(file_path, 'AgaricusModel')
+    model_path = os.path.join(file_path, 'TestModel')
     model_fields = cf.ModelFields(model_path=model_path)
     train_fields = cf.TrainFields(learning_fields, data_fields, model_fields)
     train(train_fields)
 
     data_fields = cf.DataFields(
-        data_source=cf.DataSourceFields('Agaricus', {'is_train': False}),
+        data_source=cf.DataSourceFields('test', {'is_train': False}),
         column_format=cf.ColumnFields(
             features=cf.FeatureFields([]),
             append_columns=['label'],
