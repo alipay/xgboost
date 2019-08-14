@@ -17,5 +17,5 @@ class LocalModelSource(ModelSource):
             return f.readlines()
 
     def write_lines(self, lines: List[str], model_path: str):
-        with open(model_path, 'r') as f:
+        with open(model_path, 'w') as f:
             f.writelines(lines)

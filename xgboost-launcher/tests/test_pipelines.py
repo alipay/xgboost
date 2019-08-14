@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Iterator, NamedTuple
 
@@ -58,9 +59,18 @@ def test_train_and_test_pipeline():
         num_boost_round=30,
         params=cf.BoosterFields(verbosity=3, eval_metric='auc'))
     model_path = os.path.join(file_path, 'TestModel')
-    model_fields = cf.ModelFields(model_path=model_path)
+    model_fields = cf.ModelFields(
+        model_path=model_path,
+        dump_conf=cf.DumpInfoFields(
+            path=os.path.join(file_path, 'TestModelInfo.txt'),
+            with_stats=True,
+            is_dump_fscore=True))
     train_fields = cf.TrainFields(learning_fields, data_fields, model_fields)
     train(train_fields)
+
+    assert os.path.exists(os.path.join(file_path, 'TestModelInfo.txt'))
+    f_score = open(os.path.join(file_path, 'TestModelInfo_fscore.json')).read()
+    assert isinstance(json.loads(f_score), dict)
 
     data_fields = cf.DataFields(
         data_source=cf.DataSourceFields('test', {'is_train': False}),
@@ -72,3 +82,5 @@ def test_train_and_test_pipeline():
     predict(pred_fields)
 
     os.remove(model_path)
+    os.remove(os.path.join(file_path, 'TestModelInfo.txt'))
+    os.remove(os.path.join(file_path, 'TestModelInfo_fscore.json'))
