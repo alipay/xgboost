@@ -28,8 +28,7 @@ Running with unified configure is a recommended way to launch xgboost-launcher, 
 
 Here is a demo to run a standalone job with unified configure.
 
-_For now, no local data source is available, so we just provide a demo with [ODPS](https://github.com/aliyun/aliyun-odps-python-sdk) data source._
-
+First, we provide a demo with [ODPS](https://github.com/aliyun/aliyun-odps-python-sdk) data source._
 ```python
 from launcher import launch_c
 # train pipeline
@@ -130,6 +129,94 @@ predict_conf:
         access_key: '*****'
         endpoint: '*****'
         bucket: '*****'
+```
+
+Second, we also provide a local csv data source demo based on the iris dataset.
+```python
+from launcher import launch_c
+# train pipeline
+with open('train_demo_csv.yaml', 'r') as f:
+    conf_str = f.read()
+launch_c(conf_str)
+
+# predict pipeline
+with open('predict_demo_csv.yaml', 'r') as f:
+    conf_str = f.read()
+launch_c(conf_str) 
+```
+
+* train_demo_csv.yaml
+```yaml
+job: train
+train_conf:
+  xgboost_conf:
+    num_boost_round: 100
+    params:
+      max_depth: 3
+      eta: 0.1
+      tree_method: hist
+      num_class: 3
+      objective: 'multi:softprob'
+  data_conf:
+    data_source:
+      name: csv
+      config:
+          input_table: iris.csv
+          output_table: 'prediction_result.csv'
+    column_format:
+      features:
+          columns: 'Sepal.Length,Sepal.Width,Petal.Length,Petal.Width'
+          feature_num: 4
+          item_delimiter: ','
+          kv_delimiter: ':'
+          is_sparse: false
+      label: Species    
+  model_conf:
+    model_path: test_model_123
+    model_source:
+      name: csv
+      config:
+```
+* predict_demo_csv.yaml
+```yaml
+job: predict
+predict_conf:
+  data_conf:
+    data_source:
+      name: csv
+      config:
+          input_table: iris.csv
+          output_table: 'prediction_result.csv'
+    column_format:
+      features:
+          columns: 'Sepal.Length,Sepal.Width,Petal.Length,Petal.Width'
+          feature_num: 4
+          item_delimiter: ','
+          kv_delimiter: ':'
+          is_sparse: false
+      append_columns: ['real_label']
+      result_columns:
+        result_column: 'ret_col'
+        probability_column: 'prob_col'
+        detail_column: 'detail_col'
+        leaf_column: 'leaf_encoding_col'    
+  model_conf:
+    model_path: test_model_123
+    model_source:
+      name: csv
+      config:
+```
+* iris.csv
+```csv
+5.1,3.5,1.4,0.2,1
+4.9,3.0,1.4,0.2,1
+4.7,3.2,1.3,0.2,1
+6.4,3.2,4.5,1.5,0
+6.9,3.1,4.9,1.5,0
+5.5,2.3,4.0,1.3,0
+5.8,2.8,5.1,2.4,2
+6.4,3.2,5.3,2.3,2
+6.5,3.0,5.5,1.8,2
 ```
 
 ##### run on k8s via [xgboost-operator](https://github.com/kubeflow/xgboost-operator)
