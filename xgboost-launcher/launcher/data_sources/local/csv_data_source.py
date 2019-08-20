@@ -25,38 +25,26 @@ class CsvDataSource(DataSource):
         self._w_counter = WriterUtils.Counter()
 
     def _read_impl(self):
-        input_table = self._csv_conf.input_table
-        input_df = pd.read_csv(input_table, header=None)
-        # FIXME: if append_cols is duplicated with other columns, it will crash
-        self.col_conf.features.columns
-        fetch_columns = self.col_conf.features.columns
-        fetch_columns = [col for col in fetch_columns if col is not None]
-        label_offset = len(fetch_columns) if self.col_conf.label else -1
-        if label_offset > 0:
-            fetch_columns.append(self.col_conf.label)
-        group_offset = len(fetch_columns) if self.col_conf.group else -1
-        if group_offset > 0:
-            fetch_columns.append(self.col_conf.group)
-        weight_offset = len(fetch_columns) if self.col_conf.weight else -1
-        if weight_offset > 0:
-            fetch_columns.append(self.col_conf.weight)
-        append_offset = len(fetch_columns) if self.col_conf.append_columns else -1
-        if append_offset > 0:
-            fetch_columns.extend(self.col_conf.append_columns)
+        df = pd.read_csv(self._csv_conf.input_table)
 
-        return input_df, [label_offset, group_offset, weight_offset, append_offset]
+        feature_cols = df[self.col_conf.features.columns] if self.col_conf.features.columns else None
+        label_cols = df[self.col_conf.label] if self.col_conf.label else None 
+        group_cols = df[self.col_conf.group] if self.col_conf.group else None
+        weight_cols = df[self.col_conf.weight] if self.col_conf.weight else None
+        append_cols = df[self.col_conf.append_columns] if self.col_conf.append_columns else None
+        return feature_cols, label_cols, group_cols, weight_cols, append_cols
 
     def read(self) -> Iterator[XGBoostRecord]:
-        input_df, offsets = self._read_impl()
+        feature_cols, label_cols, group_cols, weight_cols, append_cols = self._read_impl()
         rcd_builder = RecordBuilder(self.col_conf.features)
-       	for row in input_df.values:
+        for row in range(len(feature_cols)):
             yield rcd_builder.build(
-                feat=row[:len(self.col_conf.features.columns)],
-                label=row[offsets[0]] if offsets[0] > 0 else None,
-                group=row[offsets[1]] if offsets[1] > 0 else None,
-                weight=row[offsets[2]] if offsets[2] > 0 else None,
-                append_info=row[offsets[3]:] if offsets[3] > 0 else None)
-
+                feat = feature_cols.loc[row,:] if feature_cols is not None else None,
+                label = label_cols[row] if label_cols is not None  else None,
+                group = group_cols[row] if group_cols  is not None else None,
+                weight = weight_cols[row] if weight_cols  is not None else None,
+                append_info = list(append_cols.loc[row,:]) if append_cols is not None else None
+                )
 
     def write(self, result_iter: Iterator[XGBoostResult]):
         assert self._csv_conf.output_table, 'Missing output table name!'
@@ -83,7 +71,6 @@ class CsvDataSource(DataSource):
         	outputDF[c] = outputDF[c].astype(columns_type[c])
         # save predict results to csv file
         outputDF.to_csv(outputTable, index=False)
-        print(outputDF)
 
 
     def _infer_schema_and_transformer(self, ret: XGBoostResult) -> (List, Dict, List):
