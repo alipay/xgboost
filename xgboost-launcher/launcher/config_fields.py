@@ -5,18 +5,28 @@ from .utils import max_thread_num
 
 
 class BoosterFields(NamedTuple):
-    # TODO: support more booster configs
     objective: str = 'binary:logistic'
-    booster: str = 'gbtree'
-    num_class: int = 2
-    max_depth: int = 5
-    eta: float = 0.3
-    tree_method: str = None
     eval_metric: str = None
-    subsample: float = None
-    colsample_bytree: float = None
-    colsample_bylevel: float = None
-    max_bin: int = None
+    booster: str = 'gbtree'
+    seed: int = 0
+    num_class: int = 2
+    eta: float = 0.3
+    gamma: float = 0.0
+    max_depth: int = 6
+    min_child_weight: int = 1
+    subsample: float = 1.0
+    colsample_bytree: float = 1.0
+    colsample_bylevel: float = 1.0
+    colsample_bynode: float = 1.0
+    reg_lambda: float = 0.0
+    reg_alpha: float = 0.0
+    tree_method: str = 'auto'
+    sketch_eps: float = 0.03
+    scale_pos_weight: float = 1
+    grow_policy: str = 'depthwise'
+    max_leaves: int = 0
+    max_bin: int = 256
+    num_parallel_tree: int = 1
     nthread: int = max_thread_num()
     gpu_id: int = None
     convergence_criteria: str = None
@@ -25,7 +35,7 @@ class BoosterFields(NamedTuple):
 
 class LearningFields(NamedTuple):
     params: BoosterFields
-    num_boost_round: int = 50
+    num_boost_round: int = 10
     # if true, using experimental feature: xgboost.auto_train
     auto_train: bool = False
 
