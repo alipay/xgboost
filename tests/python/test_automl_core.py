@@ -95,7 +95,7 @@ class TestAutomlCore(unittest.TestCase):
                  'max_depth': 3, 'max_running_time_in_minutes': 0}
         watchlist = [(dtrain, 'train'), (dtest, 'eval')]
         best_model = xgb.train(param, dtrain, 500, watchlist)
-        self.assertTrue(float(best_model.attr('best_score')) == 1.0)
+        self.assertTrue(int(best_model.attr('best_iteration')) < 500)
 
 if __name__ == '__main__':
     unittest.main()
