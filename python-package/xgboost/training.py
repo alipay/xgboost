@@ -385,6 +385,11 @@ def train(params, dtrain, num_boost_round=10, evals=(), obj=None, feval=None,
                                                    maximize=op_direction,
                                                    verbose=bool(verbose_eval)))
 
+    if isinstance(params, dict) and params.get('max_running_time_in_minutes') is not None:
+        callbacks.append(callback.max_runing_time_in_minutes(float(params.get('max_running_time_in_minutes')),
+                                                             maximize=op_direction,
+                                                             verbose=bool(verbose_eval)))
+
     if evals_result is not None:
         callbacks.append(callback.record_evaluation(evals_result))
 

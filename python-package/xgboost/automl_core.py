@@ -232,7 +232,8 @@ def get_eval_metric(params):
                         raise ParamError("A number required after '{}'".format(metric_to_check))
                     checked = True
             if not checked:
-                objective_type = objective.split(':')[0]
+                check_objective(params)
+                objective_type = params['objective'].split(':')[0]
                 eval_metric = DEFAULT_METRIC[objective_type]
         return eval_metric
     else:

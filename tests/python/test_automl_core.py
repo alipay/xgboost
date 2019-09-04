@@ -84,5 +84,18 @@ class TestAutomlCore(unittest.TestCase):
         best_model = xgb.auto_train(param, dtrain, 10, watchlist)
         self.assertTrue(float(best_model.attr('best_score')) == 1.0)
 
+    def test_xgboost_max_running_time(self):
+        """
+        A test for auto xgboost when max running time is specified
+        """
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        dtrain = xgb.DMatrix(dir_path + '/../../demo/data/agaricus.txt.train')
+        dtest = xgb.DMatrix(dir_path + '/../../demo/data/agaricus.txt.test')
+        param = {'silent': 1, 'objective': 'binary:logistic', 'eval_metric': 'auc', 'eta': 0.01, \
+                 'max_depth': 3, 'max_running_time_in_minutes': 0}
+        watchlist = [(dtrain, 'train'), (dtest, 'eval')]
+        best_model = xgb.train(param, dtrain, 500, watchlist)
+        self.assertTrue(float(best_model.attr('best_score')) == 1.0)
+
 if __name__ == '__main__':
     unittest.main()
