@@ -94,8 +94,8 @@ class TestAutomlCore(unittest.TestCase):
         param = {'silent': 1, 'objective': 'binary:logistic', 'eval_metric': 'auc', 'eta': 0.01, \
                  'max_depth': 3, 'max_running_time_in_minutes': 0}
         watchlist = [(dtrain, 'train'), (dtest, 'eval')]
-        best_model = xgb.train(param, dtrain, 500, watchlist)
-        self.assertTrue(int(best_model.attr('best_iteration')) < 450)
+        best_model = xgb.train(param, dtrain, 5000, watchlist)
+        self.assertTrue(int(best_model.attr('best_iteration')) < 4500)
 
 if __name__ == '__main__':
     unittest.main()
