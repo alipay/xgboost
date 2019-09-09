@@ -390,14 +390,23 @@ def max_runing_time_in_minutes(max_running_time_in_minutes, maximize=False, verb
                                    best_iteration=str(state['best_iteration']),
                                    best_msg=state['best_msg'])
 
+        #  sync stop signal
         if env.rank == 0:
             elapsed_time_in_mins = (datetime.now() - state['start_time']).seconds / 60.0
             if elapsed_time_in_mins > max_running_time_in_minutes:
+                reach_max_time = rabit.broadcast(True, 0)
+            else:
+                reach_max_time = rabit.broadcast(False, 0)
+        else:
+            reach_max_time = rabit.broadcast(None, 0)
+
+        if reach_max_time:
+            if env.rank == 0:
                 best_msg = state['best_msg']
                 if verbose:
                     msg = "Exceeds maximum running time. Best iteration:\n{}\n\n"
                     rabit.tracker_print(msg.format(best_msg))
-                raise EarlyStopException(best_iteration)
+            raise EarlyStopException(best_iteration)
 
-            callback.early_stop = True
+        callback.early_stop = True
     return callback
