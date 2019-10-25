@@ -62,13 +62,13 @@ def test_train_and_test_pipeline():
     model_fields = cf.ModelFields(
         model_path=model_path,
         dump_conf=cf.DumpInfoFields(
-            path=os.path.join(file_path, 'TestModelInfo.txt'),
+            path=os.path.join(file_path, 'TestModelInfo'),
             with_stats=True,
             is_dump_fscore=True))
     train_fields = cf.TrainFields(learning_fields, data_fields, model_fields)
     train(train_fields)
 
-    assert os.path.exists(os.path.join(file_path, 'TestModelInfo.txt'))
+    assert os.path.exists(os.path.join(file_path, 'TestModelInfo.json'))
     f_score = open(os.path.join(file_path, 'TestModelInfo_fscore.json')).read()
     assert isinstance(json.loads(f_score), dict)
 
@@ -82,5 +82,5 @@ def test_train_and_test_pipeline():
     predict(pred_fields)
 
     os.remove(model_path)
-    os.remove(os.path.join(file_path, 'TestModelInfo.txt'))
+    os.remove(os.path.join(file_path, 'TestModelInfo.json'))
     os.remove(os.path.join(file_path, 'TestModelInfo_fscore.json'))

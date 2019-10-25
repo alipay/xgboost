@@ -55,7 +55,17 @@ class ModelSource:
             fmap=conf.fmap,
             with_stats=conf.with_stats,
             dump_format=conf.dump_format)
-        self.write_lines(info_list, path)
+
+        if conf.dump_format == 'json':
+            # postprocess json model info, transform it into a json array
+            lines = ['[']
+            for info in info_list[:-1]:
+                lines.append(info + ',')
+            lines.append(info_list[-1])
+            lines.append(']')
+            self.write_lines(lines, path)
+        else:
+            self.write_lines(info_list, path)
         logger.info('Booster info has been saved at path(%s) successfully!' % path)
         # dump feature scores
         if not conf.is_dump_fscore:

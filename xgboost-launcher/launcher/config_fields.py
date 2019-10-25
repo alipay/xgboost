@@ -115,7 +115,7 @@ class DumpInfoFields(NamedTuple):
     path: str = None
     fmap: str = ''
     with_stats: bool = False
-    dump_format: str = 'text'
+    dump_format: str = 'json'
     is_dump_fscore: bool = False
     importance_type: str = 'weight'
 
