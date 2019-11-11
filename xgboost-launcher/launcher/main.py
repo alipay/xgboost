@@ -13,6 +13,8 @@ from . import model_helper
 from .data_builder import XGBoostDataBuilder, XGBoostData
 from .data_source import create_data_source_init_fn, register_data_source, DataSource
 from .data_sources.odps.odps_data_source import ODPSFields, ODPSDataSource
+from .data_sources.local.csv_data_source import CsvDataSource,CsvFields
+from .model_sources.csv_model_source import CsvModelSource
 from .env_parser import extract_dist_env
 from .model_source import register_model_source
 from .model_sources.local_model_source import LocalModelSource
@@ -27,7 +29,8 @@ XGBOOST_LAUNCHER_ENV_TAG = 'xgb_launcher_env'
 register_model_source('oss', OSSFields, OssModelSource)
 register_model_source('local', None, LocalModelSource)
 register_data_source('odps', ODPSFields, ODPSDataSource)
-
+register_data_source('csv', CsvFields, CsvDataSource)
+register_model_source('csv', None, CsvModelSource)
 
 def create_data_source(conf: config_fields.DataFields):
     dist_env = extract_dist_env()
